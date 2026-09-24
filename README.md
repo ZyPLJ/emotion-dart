@@ -92,6 +92,66 @@ npm run build      # 产物在 dist/，base 是相对路径，可直接丢静态
 npm run preview
 ```
 
+---
+
+## 部署
+
+### Docker 一键起
+
+```bash
+docker compose up -d --build
+```
+
+打开 **http://localhost:8080** 就能玩。换端口用 `PORT=9000 docker compose up -d`。
+
+镜像分两阶段构建：`node:22-alpine` 里 `npm ci` + `vite build`，
+再把产物拷进 `nginx:alpine`。最终镜像里没有源码、没有 node_modules，只有一个 nginx 和三个静态文件。
+
+常用的几条：
+
+```bash
+docker compose logs -f      # 看日志
+docker compose ps           # 看状态（带 healthcheck 结果）
+docker compose down         # 停止并删除容器
+docker compose up -d --build --force-recreate   # 改了配置强制重建
+```
+
+单跑 Dockerfile 也可以：
+
+```bash
+docker build -t emotion-dart .
+docker run -d -p 8080:80 --restart unless-stopped emotion-dart
+```
+
+### 容器里做了什么
+
+`docker/nginx.conf` 处理了四件事，都是部署静态站点时容易漏的：
+
+- **gzip** —— JS 产物 107KB，压完 42KB
+- **静态资源长缓存** —— 产物文件名带内容 hash，内容变了文件名就变，所以敢缓存一年
+- **`index.html` 不缓存** —— 否则发新版本后用户手里还是旧 HTML，而它引用的旧 hash 资源可能已经被冲掉了
+- **SPA 回退** —— 非静态资源路径回退到 `index.html`；但 `.js/.css/.png` 这类找不到就老实 404，避免浏览器把一段 HTML 当 JS 解析
+
+### 拉不到基础镜像
+
+`node:22-alpine` 和 `nginx:alpine` 要从 Docker Hub 拉。国内网络下大概率要配镜像加速，
+在 Docker Desktop → Settings → Docker Engine 里加一段：
+
+```json
+{
+  "registry-mirrors": ["https://docker.m.daocloud.io"]
+}
+```
+
+改完重启 Docker 生效。这步和本项目无关，是拉任何公共镜像都要做的。
+
+### 不用 Docker
+
+产物是纯静态的，`dist/` 整个目录丢给任意静态托管（Vercel / Netlify / Cloudflare Pages / Nginx）
+即可，`base` 已经配成相对路径，放子目录也能跑。
+
+---
+
 ## 校验
 
 三条命令，都不依赖任何测试框架：
@@ -132,6 +192,10 @@ npm run shot       # 无头 Chrome 走完整流程并截图到 shots/，用于�
 ## 项目结构
 
 ```
+├── Dockerfile               # 两阶段构建：node 出产物 → nginx 托管
+├── docker-compose.yml       # 一键起服务
+├── docker/nginx.conf        # gzip / 缓存策略 / SPA 回退 / 安全响应头
+│
 src/
 ├── components/
 │   ├── EmotionInput.vue     # 首页输入框 + 示例词

@@ -1,0 +1,20 @@
+# 构建阶段只需要 源码 + 依赖清单 + 配置文件，其余一律不进构建上下文。
+# node_modules 尤其重要：本地装的是 Windows 原生依赖，拷进 Linux 容器只会更慢更错。
+
+node_modules
+dist
+
+# 开发用的脚本和文档，不参与构建
+scripts
+docs
+shots
+README.md
+
+# git 元数据
+.git
+.gitignore
+.gitattributes
+
+Dockerfile
+docker-compose.yml
+.dockerignore

@@ -1,0 +1,28 @@
+# 一键起服务：
+#   docker compose up -d --build     构建并后台启动
+#   docker compose logs -f           看日志
+#   docker compose down              停止并删除容器
+#
+# 改端口：PORT=9000 docker compose up -d
+
+services:
+  emotion-dart:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: emotion-dart:latest
+    container_name: emotion-dart
+
+    ports:
+      # 左边是宿主机端口，右边是容器里的 nginx。默认 8080，
+      # 因为 Windows 上 80 端口经常被 IIS / 其他服务占着。
+      - "${PORT:-8080}:80"
+
+    # 除非手动 stop，否则挂了就自动拉起来；机器重启也会跟着起
+    restart: unless-stopped
+
+    # healthcheck 在 Dockerfile 里定义（镜像自带），这里不重复写，
+    # 免得两处不一致时排查起来费劲。
+    #
+    # 镜像里的 nginx.conf 已经处理了 gzip、静态资源长缓存、
+    # index.html 不缓存和 SPA 回退，compose 这层只负责编排。
