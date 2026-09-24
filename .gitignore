@@ -1,0 +1,12 @@
+node_modules
+dist
+
+# shot.mjs 的生成物（README 用的图另存在 docs/screenshots/，那个要提交）
+/shots/
+
+*.local
+.DS_Store
+
+# 项目方案文档不上传
+*小游戏方案.md
+*情绪飞镖*方案*.md

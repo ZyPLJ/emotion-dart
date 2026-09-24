@@ -1,0 +1,25 @@
+{
+  "name": "emotion-dart",
+  "private": true,
+  "version": "1.0.0",
+  "description": "情绪飞镖场 —— 把今天的不爽扔出去",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit -p tsconfig.json && vite build",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
+    "preview": "vite preview",
+    "smoke": "node scripts/smoke.mjs",
+    "shot": "node scripts/shot.mjs"
+  },
+  "dependencies": {
+    "vue": "^3.5.43"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.2",
+    "@vitejs/plugin-vue": "^6.0.9",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.0",
+    "vue-tsc": "^3.3.11"
+  }
+}

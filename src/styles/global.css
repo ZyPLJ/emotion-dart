@@ -1,0 +1,225 @@
+:root {
+  /* 暗色底 —— 情绪需要一个「夜里」的舞台 */
+  --bg: #0b0d14;
+  --bg-soft: #151a29;
+  --bg-raise: #1d2333;
+  --line: rgba(255, 255, 255, 0.09);
+  --text: #eef1f8;
+  --text-dim: #8b93a7;
+  --text-faint: #5b6379;
+
+  /* 以下三个由 currentEmotion 在运行时注入，这里给愤怒模式做默认值 */
+  --accent: #ff4b2b;
+  --glow: #ff9a3c;
+  --deep: #2a0d08;
+
+  --radius: 18px;
+  --radius-sm: 12px;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+
+  --font: 'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei', 'Noto Sans SC',
+    system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 情绪底色：随 --accent 变化的一层极淡的氛围光 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(120% 70% at 50% -10%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 62%),
+    radial-gradient(90% 60% at 50% 112%, color-mix(in srgb, var(--glow) 14%, transparent), transparent 60%);
+  transition: background 0.6s ease;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input {
+  font: inherit;
+  color: inherit;
+}
+
+/* 禁止长按选中 / 拖拽，投掷时误选文字很破坏手感 */
+.no-select,
+.stage {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* ——— 通用按钮 ——— */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 26px;
+  border-radius: 999px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition:
+    transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.24s ease,
+    opacity 0.2s ease;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.955);
+}
+
+.btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--glow));
+  box-shadow:
+    0 10px 34px color-mix(in srgb, var(--accent) 42%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.btn-primary:not(:disabled):hover {
+  box-shadow:
+    0 14px 40px color-mix(in srgb, var(--accent) 58%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.btn-ghost {
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  font-weight: 600;
+}
+
+.btn-ghost:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  backdrop-filter: blur(14px);
+}
+
+/* ——— 共享动画 ——— */
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.86) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.7);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(-50%, -16px) scale(1.16);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -78px) scale(1);
+  }
+}
+
+/* 位移幅度由 --shake-power 缩放：普通命中 1，暴击 / 击碎更大 */
+@keyframes screenShake {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  15% {
+    transform: translate3d(calc(-7px * var(--shake-power, 1)), calc(3px * var(--shake-power, 1)), 0);
+  }
+  30% {
+    transform: translate3d(calc(6px * var(--shake-power, 1)), calc(-4px * var(--shake-power, 1)), 0);
+  }
+  45% {
+    transform: translate3d(calc(-4px * var(--shake-power, 1)), calc(2px * var(--shake-power, 1)), 0);
+  }
+  62% {
+    transform: translate3d(calc(3px * var(--shake-power, 1)), calc(2px * var(--shake-power, 1)), 0);
+  }
+  80% {
+    transform: translate3d(calc(-2px * var(--shake-power, 1)), calc(-1px * var(--shake-power, 1)), 0);
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.32s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 尊重系统的减弱动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.06s !important;
+  }
+}
